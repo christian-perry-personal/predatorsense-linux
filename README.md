@@ -310,6 +310,21 @@ gdbus call --session --dest org.predatorsense.linux --object-path /org/predators
 
 ---
 
+## 🔜 Coming Soon
+
+These features are planned and actively being worked on:
+
+### 🎨 Per-key RGB Control
+The ENE KB9012 RGB controller has been identified at `/dev/hidraw4` (vendor `0CF2`, product `5130`). Full per-key RGB control is in development — the protocol is currently being researched. Once complete you'll be able to set colors, effects and brightness per key directly from the app.
+
+### 🖥️ Multi-model Support (PHN16-73 and others)
+Support for other Acer Predator and Nitro models via direct hidraw communication is planned. This will allow the app to work without linuwu_sense on models where the driver has issues.
+
+### 🌈 RGB Effect Keybind
+Once per-key RGB is working, a configurable keybind to cycle RGB effects will be added.
+
+---
+
 ## 🛠️ Troubleshooting
 
 **Driver not found / warning shown:**

@@ -2098,17 +2098,36 @@ class PredatorWindow(Adw.ApplicationWindow):
         boot_card.append(boot_row)
         box.append(boot_card)
 
-        # RGB info card
+        # Brightness info card
+        bright_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        bright_card.add_css_class("card")
+        bl = Gtk.Label(label="KEYBOARD BRIGHTNESS")
+        bl.add_css_class("section-title")
+        bl.set_halign(Gtk.Align.START)
+        bright_card.append(bl)
+        bi = Gtk.Label(
+            label="Keyboard brightness is controlled via hardware keys:\n"
+                  "  Fn+F7 — decrease brightness\n"
+                  "  Fn+F8 — increase brightness\n\n"
+                  "Backlight timeout is configurable above."
+        )
+        bi.set_wrap(True)
+        bi.set_xalign(0)
+        bright_card.append(bi)
+        box.append(bright_card)
+
+        # RGB coming soon card
         rgb_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         rgb_card.add_css_class("card")
-        rl = Gtk.Label(label="PER-KEY RGB")
+        rl = Gtk.Label(label="PER-KEY RGB — COMING SOON")
         rl.add_css_class("section-title")
         rl.set_halign(Gtk.Align.START)
         rgb_card.append(rl)
         ri = Gtk.Label(
-            label="PHN16S-71 has per-key RGB. The linuwu_sense module does not expose "
-                  "per-key RGB via sysfs on this model. Use Fn+F7/F8 to cycle hardware presets. "
-                  "Backlight timeout and boot animation are controllable above."
+            label="Per-key RGB control for the PHN16S-71 is in development.\n"
+                  "The ENE KB9012 RGB controller (hidraw4, vendor 0CF2:5130) has been\n"
+                  "identified but the full protocol is still being researched.\n\n"
+                  "Currently the keyboard cycles RGB effects via hardware on boot."
         )
         ri.set_wrap(True)
         ri.set_xalign(0)
@@ -2832,12 +2851,19 @@ class PredatorWindow(Adw.ApplicationWindow):
 
     def _key_listener(self):
         """Listen for KEY_PRESENTATION (425) on /dev/input/event2 (primary)
-        with fallback scanning of all devices. Works on GNOME and KDE Plasma."""
+        plus any custom keybind set by the user.
+        Works on GNOME and KDE Plasma."""
         if not HAS_EVDEV:
             return
         import evdev
-        TARGET_KEYS = {425, 148}
         PRIMARY_DEVICE = "/dev/input/event2"
+
+        def get_target_keys():
+            keys = {425, 148}  # KEY_PRESENTATION, KEY_PROG1
+            custom = self.config.get("custom_keybind_code")
+            if custom:
+                keys.add(custom)
+            return keys
 
         def listen_device(path):
             while True:
@@ -2845,7 +2871,7 @@ class PredatorWindow(Adw.ApplicationWindow):
                     device = evdev.InputDevice(path)
                     for event in device.read_loop():
                         if (event.type == evdev.ecodes.EV_KEY and
-                                event.code in TARGET_KEYS and
+                                event.code in get_target_keys() and
                                 event.value == 1):
                             GLib.idle_add(self._cycle_profile, None)
                 except PermissionError:
@@ -2866,14 +2892,14 @@ class PredatorWindow(Adw.ApplicationWindow):
                         try:
                             caps = d.capabilities()
                             keys = caps.get(evdev.ecodes.EV_KEY, [])
-                            if any(k in keys for k in TARGET_KEYS):
+                            if any(k in keys for k in get_target_keys()):
                                 threading.Thread(target=listen_device,
                                                  args=(d.path,), daemon=True).start()
                         except Exception:
                             pass
                 except Exception:
                     pass
-                time.sleep(10)  # rescan every 10s
+                time.sleep(10)
 
         threading.Thread(target=scan_and_listen, daemon=True).start()
 
