@@ -38,7 +38,7 @@
 - **Laptop:** Acer Predator PHN16S-71
 - **OS:** CachyOS or any Arch-based Linux distro
 - **Kernel:** Linux 7.0+ (cachyos kernel recommended)
-- **Desktop:** GNOME (Wayland or X11)
+- **Desktop:** GNOME (Wayland or X11) and KDE Plasma
 - **AUR Helper:** `paru` or `yay` (recommended)
 
 ---
