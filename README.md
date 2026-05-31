@@ -27,7 +27,63 @@
 | 🖥️ LCD override (MUX switch) | ✅ |
 | 🎮 GPU mode switching (Integrated / Hybrid / NVIDIA) | ✅ |
 | ⚡ Quick profile switcher in headerbar | ✅ |
+| 🌙 Dark & Light mode toggle | ✅ |# PredatorSense Linux
+
+<div align="center">
+
+**A full PredatorSense replacement GUI for the Acer Predator PHN16S-71 on Linux**
+**Works on GNOME and KDE Plasma**
+
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://kernel.org)
+[![Distro](https://img.shields.io/badge/Distro-CachyOS%20%7C%20Arch-blue.svg)](https://cachyos.org)
+[![GTK](https://img.shields.io/badge/GTK-4.0%20%2F%20Adwaita-orange.svg)](https://gtk.org)
+
+</div>
+
+---
+
+## ✨ Features
+
+| Feature | Status |
+|---|---|
+| 📊 Live system monitoring (CPU, GPU, RAM, Battery) | ✅ |
+| 🌀 Fan speed control (CPU + GPU independent) | ✅ |
+| 🔥 Thermal profiles (Quiet / Balanced / Performance / Turbo) | ✅ |
+| ⌨️ Keyboard backlight timeout & boot animation toggle | ✅ |
+| 🔋 Battery limiter (80% charge cap) + calibration | ✅ |
+| 🔌 USB sleep charging control | ✅ |
+| 🖥️ LCD override (MUX switch) | ✅ |
+| 🎮 GPU mode switching (EnvyControl) | ✅ |
+| ⚡ Quick profile switcher in headerbar | ✅ |
 | 🌙 Dark & Light mode toggle | ✅ |
+| 🚀 Autostart on login | ✅ |
+| ⌨️ Hardware keyboard button to cycle profiles | ✅ |
+
+---
+
+## 🖥️ Requirements
+
+- **Laptop:** Acer Predator PHN16S-71
+- **OS:** CachyOS or any Arch-based Linux distro
+- **Kernel:** Linux 7.0+ (cachyos kernel recommended)
+- **Desktop:** GNOME (Wayland or X11) and KDE Plasma
+
+---
+
+## 📸 Screenshots
+
+Updated screenshots will be added at a later date
+
+---
+
+## ⚡ Quick Install
+
+```bash
+git clone [https://github.com/YourUsername/your-fork-name](https://github.com/YourUsername/your-fork-name)
+cd your-fork-name
+chmod +x install.sh
+./install.sh
 | 🚀 Autostart on login | ✅ |
 | ⌨️ Hardware keyboard button to cycle profiles | ✅ |
 
@@ -45,57 +101,7 @@
 
 ## 📸 Screenshots
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="screenshots/dashboard.png" alt="Dashboard" />
-      <br><b>📊 Dashboard</b> — Live CPU, GPU, RAM and fan monitoring
-    </td>
-    <td align="center" width="50%">
-      <img src="screenshots/fan-control.png" alt="Fan Control" />
-      <br><b>🌀 Fan Control</b> — 10-point drag curve editor with auto fan mode
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="screenshots/thermal.png" alt="Thermal Profiles" />
-      <br><b>🔥 Thermal Profiles</b> — Quiet, Balanced, Performance, Turbo
-    </td>
-    <td align="center" width="50%">
-      <img src="screenshots/power-limits-1.png" alt="Power Limits" />
-      <br><b>⚡ Power Limits</b> — CPU PL1/PL2, iGPU and NVIDIA independent control
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="screenshots/power-limits-2.png" alt="Power Limits 2" />
-      <br><b>⚡ Power Limits</b> — Sub-domain and NVIDIA sliders with PSU warnings
-    </td>
-    <td align="center" width="50%">
-      <img src="screenshots/keyboard.png" alt="Keyboard" />
-      <br><b>⌨️ Keyboard</b> — Backlight timeout and boot animation control
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="screenshots/battery.png" alt="Battery" />
-      <br><b>🔋 Battery</b> — 80% limiter, calibration and USB sleep charging
-    </td>
-    <td align="center" width="50%">
-      <img src="screenshots/display.png" alt="Display" />
-      <br><b>🖥️ Display</b> — LCD override and GPU mode switching
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="screenshots/system.png" alt="System Info" />
-      <br><b>⚙️ System</b> — Hardware specs and driver management
-    </td>
-    <td align="center" width="50%"></td>
-  </tr>
-</table>
-
----
+Updated screenshots will be added at a later date
 
 ## ⚡ Quick Install
 
@@ -311,23 +317,6 @@ Alternatively you can set up a KDE Global Shortcut to trigger it via D-Bus:
 gdbus call --session --dest org.predatorsense.linux --object-path /org/predatorsense/linux --method org.gtk.Actions.Activate cycle-profile [] {}
 ```
 
----
-
-## 🔜 Coming Soon
-
-These features are planned and actively being worked on:
-
-### 🎨 Per-key RGB Control
-The ENE KB9012 RGB controller has been identified at `/dev/hidraw4` (vendor `0CF2`, product `5130`). Full per-key RGB control is in development — the protocol is currently being researched. Once complete you'll be able to set colors, effects and brightness per key directly from the app.
-
-### 🖥️ Multi-model Support (PHN16-73 and others)
-Support for other Acer Predator and Nitro models via direct hidraw communication is planned. This will allow the app to work without linuwu_sense on models where the driver has issues.
-
-### 🌈 RGB Effect Keybind
-Once per-key RGB is working, a configurable keybind to cycle RGB effects will be added.
-
----
-
 ## 🛠️ Troubleshooting
 
 **Driver not found / warning shown:**
@@ -335,12 +324,6 @@ Once per-key RGB is working, a configurable keybind to cycle RGB effects will be
 sudo rmmod linuwu_sense
 sudo modprobe linuwu_sense predator_v4=Y
 ls /sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/
-```
-
-**DKMS build failed:**
-```bash
-sudo pacman -S linux-cachyos-headers clang llvm
-sudo dkms autoinstall
 ```
 
 **Fan/battery controls not working (permission denied):**
@@ -376,13 +359,21 @@ chmod +x uninstall.sh
 
 ## 📄 License
 
-GPL v2 — same license as the Linux kernel.
+GPL v2
 
 ---
 
 ## 📋 Changelog
 
-### v1.4
+### v0.1.0
+- Reset to v0.1.0 for personal fork
+- System and Power Limits tab now automatically query and displays your specific hardware information
+- Flipped window controls to the right side of the window and moved thermal profile and theme toggles to the left for a more standard look
+- Implemented a pipe workaround to auto-bypass the invisible limine-mkinitcpio prompt
+- Streamlined install.sh to fix DKMS build failures after kernel updates
+- Updated uninstall.sh to fully remove all custom systemd services and module-load configurations upon execution
+
+### v1.4 (Original Upstream)
 - KDE Plasma support — libadwaita now optional, falls back to GTK4
 - Predator key now works on KDE (requires input group membership)
 - Power limits fully working — sudoers updated with powercap paths
@@ -392,7 +383,7 @@ GPL v2 — same license as the Linux kernel.
 - D-Bus action added so KDE global shortcuts can trigger profile cycle
 - Added input group setup step to installer
 
-### v1.3
+### v1.3 (Original Upstream)
 - **Power Limits page** — control CPU PL1/PL2, CPU cores, iGPU and NVIDIA independently
 - PSU-aware limits — capped to respect 230W PSU (19.5V × 11.8A)
 - 5 power presets — iGPU Only, Eco, Balanced, Stock, Performance
@@ -400,20 +391,20 @@ GPL v2 — same license as the Linux kernel.
 - Save on Boot — systemd service persists limits across reboots
 - NVIDIA power limit via nvidia-smi (5W–100W range)
 
-### v1.2
+### v1.2 (Original Upstream)
 - Custom fan profiles — create, name and delete named curves
 - Fan speeds automatically sync when switching thermal profiles
 - Delete button on custom profiles with confirmation dialog
 - Reset individual or all profiles to defaults
 
-### v1.1
+### v1.1 (Original Upstream)
 - 10-point interactive fan curve editor per thermal profile
 - Independent CPU and GPU fan curves
 - Auto Fan Curve mode — fans adjust automatically based on temperature
 - Live updates — drag points and fans respond in real time
 - Custom profile creation and management
 
-### v1.0
+### v1.0 (Original Upstream)
 - Initial release
 - Full fan, thermal, battery, display, keyboard, GPU mode control
 - Predator Logo Key cycles profiles
@@ -427,3 +418,4 @@ GPL v2 — same license as the Linux kernel.
 - [DAMX](https://github.com/Div-Sharp/DAMX) — DAMX 0.9.1 with PHN16S-71 support
 - [EnvyControl](https://github.com/bayasdev/envycontrol) — GPU mode switching
 - [python-gobject](https://pygobject.gnome.org/) — GTK4 Python bindings
+- [predatorsense-linux](https://github.com/djshmoey/predatorsense-linux) - Project that this was forked from
