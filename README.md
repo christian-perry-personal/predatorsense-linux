@@ -367,7 +367,7 @@ GPL v2
 
 ### v0.1.0
 - Reset to v0.1.0 for personal fork
-- System and Power Limits tab now automatically query and displays your specific hardware information
+- System and Power Limits tabs now automatically query and displays your specific hardware information
 - Flipped window controls to the right side of the window and moved thermal profile and theme toggles to the left for a more standard look
 - Implemented a pipe workaround to auto-bypass the invisible limine-mkinitcpio prompt
 - Streamlined install.sh to fix DKMS build failures after kernel updates
