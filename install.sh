@@ -80,17 +80,15 @@ detect_kernel_headers() {
   KERNEL=$(uname -r)
   log "Kernel: $KERNEL"
 
-  # Check for kernel/header version mismatch (common on rolling distros)
   check_kernel_header_mismatch() {
     local running_kernel="$1"
     local headers_pkg="$2"
-    
-    # Get version of installed headers package
+
     local header_ver
     header_ver=$(pacman -Q "$headers_pkg" 2>/dev/null | awk "{print \$2}" | cut -d- -f1)
     local kernel_ver
     kernel_ver=$(echo "$running_kernel" | cut -d- -f1)
-    
+
     if [[ -n "$header_ver" && "$header_ver" != "$kernel_ver" ]]; then
       warn "⚠ Kernel version mismatch detected!"
       warn "  Running kernel:   $running_kernel ($kernel_ver)"
@@ -110,8 +108,7 @@ detect_kernel_headers() {
         exit 0
       }
     fi
-    
-    # Also check if build directory exists for running kernel
+
     if [[ ! -d "/lib/modules/$running_kernel/build" ]]; then
       warn "Build directory missing: /lib/modules/$running_kernel/build"
       warn "Headers may not be installed for your running kernel."
@@ -119,7 +116,6 @@ detect_kernel_headers() {
     fi
   }
 
-  # Detect correct headers package based on kernel variant
   if echo "$KERNEL" | grep -q "cachyos-lto"; then
     HEADERS_PKG="linux-cachyos-lto-headers"
   elif echo "$KERNEL" | grep -q "cachyos-bore"; then
@@ -138,13 +134,11 @@ detect_kernel_headers() {
     HEADERS_PKG="linux-headers"
   fi
 
-  # For Debian/Ubuntu-based systems
   if [[ "${PKG_MANAGER:-pacman}" == "apt" ]]; then
     HEADERS_PKG="linux-headers-$(uname -r)"
   fi
   log "Kernel headers package: $HEADERS_PKG"
 
-  # Run mismatch check on pacman-based systems
   if [[ "${PKG_MANAGER:-pacman}" == "pacman" ]]; then
     check_kernel_header_mismatch "$KERNEL" "$HEADERS_PKG"
   fi
@@ -153,15 +147,23 @@ detect_kernel_headers() {
 detect_compiler() {
   KERNEL_CONFIG="/boot/config-$(uname -r)"
 
-  # Determine what compiler the *running* kernel was built with.
-  # Using the wrong compiler for DKMS modules causes build failures on CachyOS.
-  if [[ -f "$KERNEL_CONFIG" ]] && grep -q "CONFIG_CC_IS_CLANG=y" "$KERNEL_CONFIG"; then
-    KERNEL_COMPILER="clang"
-  elif [[ -f "$KERNEL_CONFIG" ]] && grep -q "CONFIG_CC_IS_GCC=y" "$KERNEL_CONFIG"; then
-    KERNEL_COMPILER="gcc"
+  # Check standard /boot/ path first
+  if [[ -f "$KERNEL_CONFIG" ]]; then
+    if grep -q "CONFIG_CC_IS_CLANG=y" "$KERNEL_CONFIG"; then
+      KERNEL_COMPILER="clang"
+    elif grep -q "CONFIG_CC_IS_GCC=y" "$KERNEL_CONFIG"; then
+      KERNEL_COMPILER="gcc"
+    fi
+  # Fallback to Arch/CachyOS compressed config in memory
+  elif [[ -f "/proc/config.gz" ]]; then
+    if zgrep -q "CONFIG_CC_IS_CLANG=y" /proc/config.gz; then
+      KERNEL_COMPILER="clang"
+    elif zgrep -q "CONFIG_CC_IS_GCC=y" /proc/config.gz; then
+      KERNEL_COMPILER="gcc"
+    fi
   else
     KERNEL_COMPILER=""
-    warn "Cannot determine kernel compiler from $KERNEL_CONFIG — will auto-detect"
+    warn "Cannot determine kernel compiler from $KERNEL_CONFIG or /proc/config.gz — will auto-detect"
   fi
 
   if [[ "$KERNEL_COMPILER" == "clang" ]] && clang --version &>/dev/null; then
@@ -191,7 +193,7 @@ detect_compiler() {
 install_base_deps() {
   step "Installing base dependencies"
   if [[ "${PKG_MANAGER:-pacman}" == "pacman" ]]; then
-    sudo pacman -S --needed --noconfirm       git base-devel dkms       python python-gobject python-pip       gtk4 libadwaita       lm_sensors       "$HEADERS_PKG" || {
+    sudo pacman -S --needed --noconfirm git base-devel dkms python python-gobject python-pip gtk4 libadwaita lm_sensors "$HEADERS_PKG" || {
       err "pacman install failed. Check your internet or mirrors."
       exit 1
     }
@@ -201,12 +203,12 @@ install_base_deps() {
     fi
   elif [[ "${PKG_MANAGER:-pacman}" == "apt" ]]; then
     sudo apt-get update -q
-    sudo apt-get install -y       git build-essential dkms       python3 python3-gi python3-pip       gir1.2-gtk-4.0 gir1.2-adw-1       lm-sensors       "$HEADERS_PKG" || {
+    sudo apt-get install -y git build-essential dkms python3 python3-gi python3-pip gir1.2-gtk-4.0 gir1.2-adw-1 lm-sensors "$HEADERS_PKG" || {
       err "apt install failed. Check your internet connection."
       exit 1
     }
   elif [[ "${PKG_MANAGER:-pacman}" == "dnf" ]]; then
-    sudo dnf install -y       git dkms       python3 python3-gobject       gtk4 libadwaita       lm_sensors       "kernel-devel-$(uname -r)" || {
+    sudo dnf install -y git dkms python3 python3-gobject gtk4 libadwaita lm_sensors "kernel-devel-$(uname -r)" || {
       err "dnf install failed."
       exit 1
     }
@@ -216,13 +218,8 @@ install_base_deps() {
 
 install_python_deps() {
   step "Installing Python dependencies"
-  # Prefer pacman packages
-  sudo pacman -S --needed --noconfirm \
-    python-gobject \
-    python-cairo \
-    2>/dev/null || true
+  sudo pacman -S --needed --noconfirm python-gobject python-cairo 2>/dev/null || true
 
-  # nvidia monitoring
   if command -v nvidia-smi &>/dev/null; then
     log "nvidia-smi found — GPU monitoring enabled"
   else
@@ -238,55 +235,39 @@ install_linuwu_sense() {
   WORK_DIR="/tmp/linuwu-sense-build"
   rm -rf "$WORK_DIR"
 
-  # Check for bundled driver first, then fall back to GitHub
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  DRIVER_DIR="$SCRIPT_DIR/driver"
-
-  if [[ -f "$DRIVER_DIR/src/linuwu_sense.c" ]]; then
-    log "Using bundled driver source"
-    cp -r "$DRIVER_DIR" "$WORK_DIR"
-  else
-    log "Downloading DAMX 0.9.1 driver from GitHub..."
-    DAMX_URL="https://github.com/PXDiv/Div-Acer-Manager-Max/releases/download/v0.9.1/DAMX-0.9.1.tar.xz"
-    curl -L "$DAMX_URL" -o /tmp/DAMX-0.9.1.tar.xz || {
-      err "Failed to download driver. Check your internet connection."
-      exit 1
-    }
-    tar -xf /tmp/DAMX-0.9.1.tar.xz -C /tmp/
-    cp -r /tmp/DAMX-0.9.1/Linuwu-Sense/. "$WORK_DIR"
-    rm -f /tmp/DAMX-0.9.1.tar.xz
-    rm -rf /tmp/DAMX-0.9.1
-    log "DAMX 0.9.1 driver downloaded"
-  fi
+  log "Cloning latest Linuwu-Sense source from GitHub..."
+  git clone https://github.com/0x7375646F/Linuwu-Sense.git "$WORK_DIR" || {
+    err "Failed to clone Linuwu-Sense. Check your internet connection or git."
+    exit 1
+  }
 
   cd "$WORK_DIR"
 
-  # Detect version from Makefile or default
   MOD_VER=$(grep -oP '(?<=VERSION = ).*' Makefile 2>/dev/null | head -1 || echo "1.0.0")
   log "Module version: $MOD_VER"
 
-  # Copy to DKMS source dir
+  sudo rm -rf "/usr/src/linuwu-sense-$MOD_VER"
   sudo mkdir -p "/usr/src/linuwu-sense-$MOD_VER"
   sudo cp -r . "/usr/src/linuwu-sense-$MOD_VER/"
 
-  # Create dkms.conf if not present
-  if true; then  # Always regenerate dkms.conf to ensure BUILT_MODULE_LOCATION is set
-    sudo tee "/usr/src/linuwu-sense-$MOD_VER/dkms.conf" > /dev/null <<EOF
+  # Streamlined dkms.conf logic. Lets dkms handle the standard kernel build paths
+  sudo tee "/usr/src/linuwu-sense-$MOD_VER/dkms.conf" > /dev/null <<EOF
 PACKAGE_NAME="linuwu-sense"
 PACKAGE_VERSION="$MOD_VER"
+MAKE[0]="make ${LLVM_FLAG}"
+CLEAN="make clean"
 BUILT_MODULE_NAME[0]="linuwu_sense"
 BUILT_MODULE_LOCATION[0]="src/"
 DEST_MODULE_LOCATION[0]="/kernel/drivers/platform/x86"
 AUTOINSTALL="yes"
-MAKE[0]="make ${LLVM_FLAG} -C \${kernel_source_dir} M=\${dkms_tree}/\${PACKAGE_NAME}/\${PACKAGE_VERSION}/build"
-CLEAN="make -C \${kernel_source_dir} M=\${dkms_tree}/\${PACKAGE_NAME}/\${PACKAGE_VERSION}/build clean"
 EOF
-    log "Created dkms.conf"
-  fi
+  log "Created dynamic dkms.conf"
 
-  # Register and build
+  # Clean up old iterations in case this is an update
+  sudo dkms remove -m linuwu-sense -v "$MOD_VER" --all 2>/dev/null || true
+
   sudo dkms add -m linuwu-sense -v "$MOD_VER" 2>/dev/null || true
-  sudo dkms build -m linuwu-sense -v "$MOD_VER" --kernelsourcedir "/usr/lib/modules/$(uname -r)/build" || {
+  sudo dkms build -m linuwu-sense -v "$MOD_VER" || {
     err "DKMS build failed. Make sure kernel headers are installed for $(uname -r)"
     echo -e "  Try: ${YELLOW}sudo pacman -S $HEADERS_PKG${NC}"
     exit 1
@@ -297,29 +278,29 @@ EOF
   }
   log "linuwu_sense DKMS module installed"
 
-  # Blacklist old acer_wmi and set required predator_v4=Y parameter
+  # Hardware settings configuration
   sudo tee /etc/modprobe.d/acer-wmi-blacklist.conf > /dev/null <<EOF
 # Blacklisted by PredatorSense Linux installer
 # linuwu_sense replaces this module for Predator/Nitro laptops
 blacklist acer_wmi
 EOF
-  # PHN16S-71 requires predator_v4=Y to expose sysfs fan/RGB controls
-  echo "options linuwu_sense predator_v4=Y" | sudo tee /etc/modprobe.d/linuwu-sense-options.conf > /dev/null
-  log "Blacklisted legacy acer_wmi module"
-  log "Set predator_v4=Y module parameter"
 
-  # Load the new module now
+  echo "options linuwu_sense predator_v4=Y" | sudo tee /etc/modprobe.d/linuwu-sense-options.conf > /dev/null
+  echo "linuwu_sense" | sudo tee /etc/modules-load.d/linuwu_sense.conf > /dev/null
+
+  log "Blacklisted legacy acer_wmi module"
+  log "Set predator_v4=Y module parameter and enabled boot loading"
+
   sudo modprobe -r acer_wmi 2>/dev/null || true
   sudo modprobe linuwu_sense && log "linuwu_sense module loaded" || warn "Module load failed — may need reboot"
 
-  cd -
+  cd - >/dev/null
   rm -rf "$WORK_DIR"
 }
 
 install_battery_module() {
   step "Installing acer-wmi-battery DKMS module (80% charge limit)"
 
-  # Try AUR if paru/yay available
   if command -v paru &>/dev/null; then
     paru -S --needed --noconfirm acer-wmi-battery-dkms 2>/dev/null && {
       log "acer-wmi-battery installed via paru"
@@ -350,7 +331,6 @@ install_envycontrol() {
     yay -S --needed --noconfirm envycontrol 2>/dev/null && log "EnvyControl installed" && return
   fi
 
-  # Fallback: pip install
   pip install envycontrol --break-system-packages 2>/dev/null && log "EnvyControl installed via pip" || \
     warn "EnvyControl install failed — GPU mode switching unavailable"
 }
@@ -368,15 +348,12 @@ install_app() {
   BIN_DIR="$HOME/.local/bin"
   mkdir -p "$INSTALL_DIR" "$BIN_DIR"
 
-  # Copy app
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   cp "$SCRIPT_DIR/src/predatorsense.py" "$INSTALL_DIR/"
 
-  # Detect desktop environment
   DE="${XDG_CURRENT_DESKTOP:-unknown}"
   log "Desktop environment: $DE"
 
-  # Install libadwaita if on GNOME, skip if KDE (optional dependency)
   if echo "$DE" | grep -qi "gnome"; then
     sudo pacman -S --needed --noconfirm libadwaita 2>/dev/null || true
   elif echo "$DE" | grep -qi "kde\|plasma"; then
@@ -384,14 +361,12 @@ install_app() {
     sudo pacman -S --needed --noconfirm python-evdev 2>/dev/null || true
   fi
 
-  # Create launcher
   cat > "$BIN_DIR/predatorsense" <<'LAUNCHEOF'
 #!/usr/bin/env bash
 exec python3 "$HOME/.local/share/predatorsense-linux/predatorsense.py" "$@"
 LAUNCHEOF
   chmod +x "$BIN_DIR/predatorsense"
 
-  # Desktop entry — works on both GNOME and KDE
   mkdir -p "$HOME/.local/share/applications"
   cat > "$HOME/.local/share/applications/predatorsense.desktop" <<DESKTOPEOF
 [Desktop Entry]
@@ -406,14 +381,12 @@ Keywords=acer;predator;fan;rgb;gaming;
 StartupNotify=true
 DESKTOPEOF
 
-  # Add ~/.local/bin to PATH in shell configs
   for RC in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.config/fish/config.fish"; do
     if [[ -f "$RC" ]] && ! grep -q '\.local/bin' "$RC"; then
       echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$RC"
     fi
   done
 
-  # Autostart on login (GNOME autostart)
   mkdir -p "$HOME/.config/autostart"
   cat > "$HOME/.config/autostart/predatorsense.desktop" <<EOF
 [Desktop Entry]
@@ -428,7 +401,6 @@ StartupNotify=false
 EOF
   log "Autostart entry created"
 
-  # Systemd user service (starts before GNOME session, survives window close)
   mkdir -p "$HOME/.config/systemd/user"
   cat > "$HOME/.config/systemd/user/predatorsense.service" <<EOF
 [Unit]
@@ -469,7 +441,6 @@ EOF
 setup_sudo_rules() {
   step "Setting up passwordless sudo for specific hardware controls"
   CURRENT_USER=$(whoami)
-  # Use printf + tee to avoid heredoc issues in fish shell and colon-in-path syntax errors
   {
     printf "# PredatorSense Linux — targeted sudo rules\n"
     printf "%s ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/module/linuwu_sense/*\n" "$CURRENT_USER"
@@ -503,7 +474,7 @@ setup_input_group() {
 post_install_summary() {
   echo ""
   echo -e "${CYAN}╔═══════════════════════════════════════════════════╗${NC}"
-  echo -e "${CYAN}║          Installation Complete! 🎮                ║${NC}"
+  echo -e "${CYAN}║         Installation Complete! 🎮                 ║${NC}"
   echo -e "${CYAN}╚═══════════════════════════════════════════════════╝${NC}"
   echo ""
   echo -e "  ${GREEN}Installed components:${NC}"

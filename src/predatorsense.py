@@ -101,15 +101,13 @@ RAPL_IGPU_PL1  = f"{RAPL_IGPU_BASE}/constraint_0_power_limit_uw"
 RAPL_PSYS_BASE = "/sys/class/powercap/intel-rapl/intel-rapl:1"
 RAPL_PSYS_PL1  = f"{RAPL_PSYS_BASE}/constraint_0_power_limit_uw"
 
-# Safe ranges for Core Ultra 9 275HX + RTX 5070 Ti (watts)
-# PSU: 230.1W (19.5V x 11.8A) — system overhead ~20W
-# Safe combined CPU+GPU budget: ~210W
-RAPL_PL1_MIN      = 15    # can go this low for iGPU-only workloads
+# Safe ranges for Core Ultra 9 275HX + RTX 5060 Laptop (watts)
+RAPL_PL1_MIN      = 15
 RAPL_PL1_DEFAULT  = 85
-RAPL_PL1_MAX      = 105   # capped: 105W CPU + 85W GPU + 20W overhead = 210W ✓
+RAPL_PL1_MAX      = 105
 RAPL_PL2_MIN      = 25
 RAPL_PL2_DEFAULT  = 140
-RAPL_PL2_MAX      = 140   # keep at stock max — PL2 is brief burst, safe
+RAPL_PL2_MAX      = 140
 RAPL_CORE_MIN     = 10
 RAPL_CORE_DEFAULT = 0
 RAPL_CORE_MAX     = 85
@@ -118,8 +116,8 @@ RAPL_IGPU_DEFAULT = 0
 RAPL_IGPU_MAX     = 30
 NVIDIA_MIN        = 15
 NVIDIA_DEFAULT    = 70
-NVIDIA_MAX        = 100   # capped: 85W CPU + 100W GPU + 20W overhead = 205W ✓
-PSU_WATTAGE       = 230   # 19.5V x 11.8A
+NVIDIA_MAX        = 100
+PSU_WATTAGE       = 230
 
 RAPL_PRESETS = {
     "iGPU Only":   {"pl1": 25,  "pl2": 35,  "core": 20, "igpu": 15, "nvidia": 15, "desc": "CPU+iGPU only. NVIDIA minimal. ~60W total."},
@@ -128,6 +126,7 @@ RAPL_PRESETS = {
     "Stock":       {"pl1": 85,  "pl2": 140, "core": 0,  "igpu": 0,  "nvidia": 70, "desc": "Factory defaults. ~175W total. ✓ PSU safe."},
     "Performance": {"pl1": 100, "pl2": 140, "core": 0,  "igpu": 0,  "nvidia": 90, "desc": "Near-max safe for 230W PSU. ~210W total."},
 }
+
 BATTERY_LIMIT = f"{PREDATOR_BASE}/battery_limiter"
 BATTERY_CAL   = f"{PREDATOR_BASE}/battery_calibration"
 FAN_SPEED     = f"{PREDATOR_BASE}/fan_speed"
@@ -136,53 +135,11 @@ USB_CHARGING  = f"{PREDATOR_BASE}/usb_charging"
 BACKLIGHT_TO    = f"{PREDATOR_BASE}/backlight_timeout"
 BOOT_ANIM_SOUND = f"{PREDATOR_BASE}/boot_animation_sound"
 
-# RAPL Power Limits
-RAPL_BASE      = "/sys/class/powercap/intel-rapl/intel-rapl:0"
-RAPL_PL1       = f"{RAPL_BASE}/constraint_0_power_limit_uw"
-RAPL_PL2       = f"{RAPL_BASE}/constraint_1_power_limit_uw"
-RAPL_CORE_BASE = f"{RAPL_BASE}/intel-rapl:0:0"
-RAPL_CORE_PL1  = f"{RAPL_CORE_BASE}/constraint_0_power_limit_uw"
-RAPL_IGPU_BASE = f"{RAPL_BASE}/intel-rapl:0:1"
-RAPL_IGPU_PL1  = f"{RAPL_IGPU_BASE}/constraint_0_power_limit_uw"
-RAPL_PSYS_BASE = "/sys/class/powercap/intel-rapl/intel-rapl:1"
-RAPL_PSYS_PL1  = f"{RAPL_PSYS_BASE}/constraint_0_power_limit_uw"
+PER_ZONE_MODE = f"{KB_BASE}/per_zone_mode" if KB_BASE else None
+FOUR_ZONE_MODE= f"{KB_BASE}/four_zone_mode" if KB_BASE else None
 
-# Safe ranges for Core Ultra 9 275HX + RTX 5070 Ti (watts)
-# PSU: 230.1W (19.5V x 11.8A) — system overhead ~20W
-# Safe combined CPU+GPU budget: ~210W
-RAPL_PL1_MIN      = 15    # can go this low for iGPU-only workloads
-RAPL_PL1_DEFAULT  = 85
-RAPL_PL1_MAX      = 105   # capped: 105W CPU + 85W GPU + 20W overhead = 210W ✓
-RAPL_PL2_MIN      = 25
-RAPL_PL2_DEFAULT  = 140
-RAPL_PL2_MAX      = 140   # keep at stock max — PL2 is brief burst, safe
-RAPL_CORE_MIN     = 10
-RAPL_CORE_DEFAULT = 0
-RAPL_CORE_MAX     = 85
-RAPL_IGPU_MIN     = 5
-RAPL_IGPU_DEFAULT = 0
-RAPL_IGPU_MAX     = 30
-NVIDIA_MIN        = 15
-NVIDIA_DEFAULT    = 70
-NVIDIA_MAX        = 100   # capped: 85W CPU + 100W GPU + 20W overhead = 205W ✓
-PSU_WATTAGE       = 230   # 19.5V x 11.8A
-
-RAPL_PRESETS = {
-    "iGPU Only":   {"pl1": 25,  "pl2": 35,  "core": 20, "igpu": 15, "nvidia": 15, "desc": "CPU+iGPU only. NVIDIA minimal. ~60W total."},
-    "Eco":         {"pl1": 35,  "pl2": 55,  "core": 0,  "igpu": 0,  "nvidia": 30, "desc": "Minimum power both chips. ~85W total."},
-    "Balanced":    {"pl1": 65,  "pl2": 100, "core": 0,  "igpu": 0,  "nvidia": 55, "desc": "Reduced power. Great thermals. ~140W total."},
-    "Stock":       {"pl1": 85,  "pl2": 140, "core": 0,  "igpu": 0,  "nvidia": 70, "desc": "Factory defaults. ~175W total. ✓ PSU safe."},
-    "Performance": {"pl1": 100, "pl2": 140, "core": 0,  "igpu": 0,  "nvidia": 90, "desc": "Near-max safe for 230W PSU. ~210W total."},
-}
-PER_ZONE_MODE = f"{KB_BASE}/per_zone_mode"
-FOUR_ZONE_MODE= f"{KB_BASE}/four_zone_mode"
-
-# Maps Windows PredatorSense name -> kernel platform-profile value
-# performance = Turbo, balanced-performance = Performance, balanced = Balanced
-# quiet = Quiet, low-power = Eco (battery only)
 THERMAL_PROFILES = ["low-power", "balanced", "balanced-performance", "performance"]
 
-# Fan speeds per thermal profile (matches Windows PredatorSense)
 PROFILE_FAN_SPEEDS = {
     "low-power":            (0,   0),    # Quiet   — EC managed
     "balanced":             (50,  50),   # Balanced
@@ -205,8 +162,6 @@ PRESET_PROFILES  = {
 
 CONFIG_PATH = os.path.expanduser("~/.config/predatorsense-linux/settings.json")
 
-# Default 10-point fan curves per profile [temp, fan_pct] pairs
-# CPU and GPU curves are independent
 DEFAULT_FAN_CURVES = {
     "low-power": {
         "cpu": [[0,0],[20,0],[30,0],[40,10],[50,15],[60,20],[70,30],[80,40],[90,55],[100,70]],
@@ -249,7 +204,6 @@ def read_sensors() -> dict:
     try:
         out = subprocess.check_output(["sensors", "-j"], text=True, timeout=5)
         sensors = json.loads(out)
-        # CPU temp
         for chip, vals in sensors.items():
             if "coretemp" in chip or "k10temp" in chip or "cpu_thermal" in chip:
                 for k, v in vals.items():
@@ -277,7 +231,6 @@ def read_sensors() -> dict:
     except Exception:
         pass
 
-    # RAM
     try:
         with open("/proc/meminfo") as f:
             mem = {}
@@ -293,7 +246,6 @@ def read_sensors() -> dict:
     except Exception:
         pass
 
-    # Battery
     try:
         bat_path = "/sys/class/power_supply/BAT0"
         if os.path.exists(bat_path):
@@ -304,13 +256,12 @@ def read_sensors() -> dict:
     except Exception:
         pass
 
-    # CPU usage via /proc/stat (reliable, no sudo, no parsing issues)
     try:
         def _read_cpu_stat():
             with open("/proc/stat") as f:
                 line = f.readline()
             vals = list(map(int, line.split()[1:]))
-            idle = vals[3] + (vals[4] if len(vals) > 4 else 0)  # idle + iowait
+            idle = vals[3] + (vals[4] if len(vals) > 4 else 0)
             total = sum(vals)
             return total, idle
 
@@ -323,7 +274,6 @@ def read_sensors() -> dict:
     except Exception:
         pass
 
-    # Fan RPM from hwmon (real hardware values)
     hwmon = _find_hwmon_dir()
     if hwmon:
         f1 = sysfs_read(f"{hwmon}/fan1_input")
@@ -333,12 +283,10 @@ def read_sensors() -> dict:
         t3 = sysfs_read(f"{hwmon}/temp3_input")
         if f1: data["fan1_rpm"] = int(f1)
         if f2: data["fan2_rpm"] = int(f2)
-        # temps are in millidegrees
         if t1 and not data.get("cpu_temp"): data["cpu_temp"] = float(t1) / 1000
         if t2: data["gpu_temp_ec"] = float(t2) / 1000
         if t3: data["fan_temp3"]   = float(t3) / 1000
 
-    # CPU package power via RAPL — delta between calls
     try:
         energy_path = "/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj"
         now = time.monotonic()
@@ -353,27 +301,87 @@ def read_sensors() -> dict:
     except Exception:
         pass
 
-    # Current PL1 limit
     pl1 = sysfs_read(RAPL_PL1)
     if pl1:
         data["pl1_current"] = int(pl1) // 1_000_000
 
-    # Fan speed setpoint (if readable)
     fan = sysfs_read(FAN_SPEED)
     if fan:
         parts = fan.split(",")
         data["fan_cpu"] = int(parts[0]) if parts[0].strip().isdigit() else None
         data["fan_gpu"] = int(parts[1]) if len(parts) > 1 and parts[1].strip().isdigit() else None
 
-    # Thermal profile
     data["thermal"] = sysfs_read(PLATFORM_PROFILE) or "unknown"
-
     return data
+
+# ─── Dynamic Specs Helpers ───────────────────────────────────────────────────
+def _get_cpu_name():
+    try:
+        out = subprocess.check_output(["lscpu"], text=True)
+        for line in out.splitlines():
+            if line.startswith("Model name:"):
+                return line.split(":", 1)[1].strip()
+    except Exception:
+        pass
+    return "Unknown CPU"
+
+def _get_gpu_names():
+    gpus = {"nvidia": "NVIDIA GPU (Powered Off)", "igpu": "Unknown iGPU"}
+
+    # Try nvidia-smi first for absolute accuracy
+    try:
+        out = subprocess.check_output(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            text=True, timeout=2
+        ).strip()
+        if out:
+            gpus["nvidia"] = out
+    except Exception:
+        pass
+
+    # Use lspci for iGPU (and fallback for NVIDIA if smi fails)
+    try:
+        out = subprocess.check_output(["lspci", "-nn"], text=True)
+        for line in out.splitlines():
+            if "VGA compatible controller" in line or "3D controller" in line:
+                if "NVIDIA" in line and gpus["nvidia"] == "NVIDIA GPU (Powered Off)":
+                    parts = line.split("[")
+                    if len(parts) > 2:
+                        gpus["nvidia"] = "NVIDIA " + parts[2].split("]")[0]
+                elif "Intel" in line or "AMD" in line:
+                    parts = line.split("[")
+                    if len(parts) > 2:
+                        gpus["igpu"] = parts[2].split("]")[0]
+                    else:
+                        gpus["igpu"] = "Integrated Graphics"
+    except Exception:
+        pass
+    return gpus
+
+def _get_os_info():
+    try:
+        with open("/etc/os-release") as f:
+            for line in f:
+                if line.startswith("PRETTY_NAME="):
+                    return line.split("=")[1].strip().strip('"')
+    except Exception:
+        pass
+    return "Unknown Linux"
+
+def _get_ram_info():
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemTotal:"):
+                    kb = int(line.split()[1])
+                    return f"{round(kb / (1024 * 1024), 1)} GiB"
+    except Exception:
+        pass
+    return "Unknown RAM"
 
 
 # ─── Circular gauge widget ─────────────────────────────────────────────────────
 class GaugeWidget(Gtk.DrawingArea):
-    """Futuristic multi-ring gauge with glow effect and animated fill."""
     def __init__(self, label="", color=(1.0, 0.42, 0.0), size=120):
         super().__init__()
         self.label      = label
@@ -388,7 +396,7 @@ class GaugeWidget(Gtk.DrawingArea):
 
     def set_value(self, pct, text=""):
         self._target = max(0, min(100, pct))
-        self._value  = self._target   # instant for now
+        self._value  = self._target
         self._text   = text
         self.queue_draw()
 
@@ -405,10 +413,8 @@ class GaugeWidget(Gtk.DrawingArea):
 
         bg_alpha = 0.08 if self._dark_mode else 0.12
         text_alpha = 1.0 if self._dark_mode else 0.85
-
         r, g, b = self.color
 
-        # Outer tick marks (12 ticks)
         cr.set_line_width(1.5)
         for i in range(12):
             angle = -math.pi/2 + i * (2*math.pi/12)
@@ -427,13 +433,11 @@ class GaugeWidget(Gtk.DrawingArea):
             cr.line_to(x2, y2)
             cr.stroke()
 
-        # Background ring
         cr.set_line_width(8)
         cr.set_source_rgba(r, g, b, bg_alpha)
         cr.arc(cx, cy, r_inner, 0, 2 * math.pi)
         cr.stroke()
 
-        # Glow shadow (drawn twice, blurred effect via multiple strokes)
         angle_start = -math.pi / 2
         angle_end   = angle_start + (self._value / 100) * 2 * math.pi
         if self._value > 0:
@@ -442,13 +446,11 @@ class GaugeWidget(Gtk.DrawingArea):
             cr.arc(cx, cy, r_inner, angle_start, angle_end)
             cr.stroke()
 
-            # Main arc with gradient effect
             cr.set_line_width(8)
             cr.set_source_rgba(r, g, b, 0.9)
             cr.arc(cx, cy, r_inner, angle_start, angle_end)
             cr.stroke()
 
-            # Bright tip dot at end of arc
             tip_x = cx + r_inner * math.cos(angle_end)
             tip_y = cy + r_inner * math.sin(angle_end)
             cr.arc(tip_x, tip_y, 5, 0, 2*math.pi)
@@ -458,7 +460,6 @@ class GaugeWidget(Gtk.DrawingArea):
             cr.set_source_rgba(r, g, b, 0.4)
             cr.fill()
 
-        # Center background circle
         cr.arc(cx, cy, r_inner - 10, 0, 2*math.pi)
         if self._dark_mode:
             cr.set_source_rgba(0.05, 0.07, 0.09, 1.0)
@@ -466,7 +467,6 @@ class GaugeWidget(Gtk.DrawingArea):
             cr.set_source_rgba(0.96, 0.97, 0.98, 1.0)
         cr.fill()
 
-        # Value text
         cr.set_source_rgba(text_alpha, text_alpha, text_alpha, 0.95)
         cr.select_font_face("Monospace", 0, 1)
         fsize = 15 if len(self._text) <= 4 else 11
@@ -475,7 +475,6 @@ class GaugeWidget(Gtk.DrawingArea):
         cr.move_to(cx - ext.width/2, cy + ext.height/2 - 4)
         cr.show_text(self._text)
 
-        # Label text
         cr.set_source_rgba(r, g, b, 0.8)
         cr.select_font_face("Sans", 0, 1)
         cr.set_font_size(8)
@@ -483,8 +482,6 @@ class GaugeWidget(Gtk.DrawingArea):
         cr.move_to(cx - ext2.width/2, cy + 16)
         cr.show_text(self.label)
 
-
-# ─── RGB Zone color button ─────────────────────────────────────────────────────
 class ZoneButton(Gtk.Button):
     def __init__(self, zone_idx, color="#00BFFF"):
         super().__init__()
@@ -531,17 +528,13 @@ class ZoneButton(Gtk.Button):
         c = self._color.lstrip("#")
         return c.zfill(6).lower()
 
-
-# ─── Fan Curve Editor Widget ───────────────────────────────────────────────────
 class FanCurveWidget(Gtk.DrawingArea):
-    """Interactive 10-point fan curve editor drawn with Cairo."""
     def __init__(self, label="CPU", color=(1.0, 0.42, 0.0), on_change=None):
         super().__init__()
         self.label     = label
         self.color     = color
         self.on_change = on_change
         self._dark     = True
-        # 10 points: [temp_pct(0-100), fan_pct(0-100)]
         self._points   = [[i*10, min(i*10, 100)] for i in range(10)]
         self._dragging = None
         self.set_content_width(420)
@@ -549,21 +542,12 @@ class FanCurveWidget(Gtk.DrawingArea):
         self.set_draw_func(self._draw)
         self.set_focusable(True)
 
-        # Mouse events — use both click and drag for reliability
-        self._dragging = None
-        self._drag_w = 420
-        self._drag_h = 200
-        self._last_x = 0
-        self._last_y = 0
-
-        # Click to select point
         click = Gtk.GestureClick()
         click.set_button(1)
         click.connect("pressed", self._on_press)
         click.connect("released", self._on_release)
         self.add_controller(click)
 
-        # Motion to drag point
         motion = Gtk.EventControllerMotion()
         motion.connect("motion", self._on_motion)
         self.add_controller(motion)
@@ -580,19 +564,16 @@ class FanCurveWidget(Gtk.DrawingArea):
         self.queue_draw()
 
     def _pt_to_xy(self, pt, w, h, pad=24):
-        """Convert [temp%, fan%] to canvas coordinates."""
         x = pad + (pt[0] / 100) * (w - pad*2)
         y = (h - pad) - (pt[1] / 100) * (h - pad*2)
         return x, y
 
     def _xy_to_pt(self, x, y, w, h, pad=24):
-        """Convert canvas coords to [temp%, fan%]."""
         t = (x - pad) / (w - pad*2) * 100
         f = (1 - (y - 0) / (h - pad)) * 100
         return [max(0, min(100, t)), max(0, min(100, f))]
 
     def _nearest_point(self, x, y, w, h, threshold=30):
-        """Larger threshold for easier clicking."""
         best, dist = None, threshold
         for i, pt in enumerate(self._points):
             px, py = self._pt_to_xy(pt, w, h)
@@ -606,7 +587,6 @@ class FanCurveWidget(Gtk.DrawingArea):
         h = self.get_allocated_height() or self.get_content_height()
         self._drag_w, self._drag_h = w, h
         self._dragging = self._nearest_point(x, y, w, h)
-        self._last_x, self._last_y = x, y
         self.queue_draw()
 
     def _on_release(self, gesture, n_press, x, y):
@@ -618,10 +598,8 @@ class FanCurveWidget(Gtk.DrawingArea):
             return
         w, h = self._drag_w, self._drag_h
         new_pt = self._xy_to_pt(x, y, w, h)
-        # Only fan speed moves, temperature stays fixed at its column
         new_pt[0] = self._points[self._dragging][0]
         self._points[self._dragging] = new_pt
-        self._last_x, self._last_y = x, y
         self.queue_draw()
         if self.on_change:
             self.on_change(self._points)
@@ -634,12 +612,10 @@ class FanCurveWidget(Gtk.DrawingArea):
         grid_c = 0.15 if self._dark else 0.85
         text_c = 0.6 if self._dark else 0.4
 
-        # Background
         cr.set_source_rgb(*bg)
         cr.rectangle(0, 0, w, h)
         cr.fill()
 
-        # Grid lines
         cr.set_line_width(0.5)
         cr.set_source_rgba(grid_c, grid_c, grid_c, 0.5)
         for i in range(11):
@@ -649,7 +625,6 @@ class FanCurveWidget(Gtk.DrawingArea):
             y = (h - pad) - i * (h - pad*2) / 5
             cr.move_to(pad, y); cr.line_to(w, y); cr.stroke()
 
-        # Axis labels
         cr.set_source_rgba(text_c, text_c, text_c, 0.8)
         cr.select_font_face("Monospace", 0, 0)
         cr.set_font_size(8)
@@ -668,7 +643,6 @@ class FanCurveWidget(Gtk.DrawingArea):
             cr.move_to(2, y + ext.height/2)
             cr.show_text(lbl)
 
-        # Curve fill
         pts_xy = [self._pt_to_xy(pt, w, h, pad) for pt in self._points]
         cr.move_to(pts_xy[0][0], h - pad)
         for px, py in pts_xy:
@@ -678,7 +652,6 @@ class FanCurveWidget(Gtk.DrawingArea):
         cr.set_source_rgba(r, g, b, 0.12)
         cr.fill()
 
-        # Curve line
         cr.set_line_width(2)
         cr.set_source_rgba(r, g, b, 0.9)
         cr.move_to(*pts_xy[0])
@@ -686,20 +659,16 @@ class FanCurveWidget(Gtk.DrawingArea):
             cr.line_to(px, py)
         cr.stroke()
 
-        # Control points
         for i, (px, py) in enumerate(pts_xy):
-            # Outer glow
             cr.arc(px, py, 7, 0, 2*math.pi)
             cr.set_source_rgba(r, g, b, 0.25)
             cr.fill()
-            # Inner dot
             cr.arc(px, py, 4, 0, 2*math.pi)
             if i == self._dragging:
                 cr.set_source_rgba(1, 1, 1, 1)
             else:
                 cr.set_source_rgba(r, g, b, 1)
             cr.fill()
-            # Fan % label above point
             fan_lbl = f"{int(self._points[i][1])}%"
             cr.set_source_rgba(r, g, b, 0.9)
             cr.set_font_size(7.5)
@@ -707,21 +676,17 @@ class FanCurveWidget(Gtk.DrawingArea):
             cr.move_to(px - ext.width/2, py - 10)
             cr.show_text(fan_lbl)
 
-        # Label
         cr.set_source_rgba(r, g, b, 0.7)
         cr.select_font_face("Sans", 0, 1)
         cr.set_font_size(10)
         cr.move_to(pad + 4, 14)
         cr.show_text(f"{self.label} Fan Curve")
 
-
-# ─── Main Application Window ───────────────────────────────────────────────────
 class PredatorApp(Adw.Application):
     def __init__(self):
         super().__init__(application_id="org.predatorsense.linux",
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.connect("activate", self._on_activate)
-        # Register D-Bus actions so KDE/GNOME shortcuts can trigger profile cycle
         cycle_action = Gio.SimpleAction.new("cycle-profile", None)
         cycle_action.connect("activate", lambda a, p: self.win._cycle_profile(None) if hasattr(self, "win") else None)
         self.add_action(cycle_action)
@@ -731,17 +696,14 @@ class PredatorApp(Adw.Application):
             self.win.present()
             return
         self.win = PredatorWindow(application=app)
-        # Hide on close instead of quitting — key listener keeps running
         self.win.connect("close-request", self._on_close_request)
         self.win.present()
-        # Keep app alive in background (holds a reference)
         self.hold()
 
     def _on_close_request(self, win):
-        """Hide window instead of quitting so key listener stays alive."""
         win.hide()
         self._show_tray_notification()
-        return True  # prevent default close/quit
+        return True
 
     def _show_tray_notification(self):
         try:
@@ -754,7 +716,6 @@ class PredatorApp(Adw.Application):
         except Exception:
             pass
 
-        # Register actions
         show_action = Gio.SimpleAction.new("show", None)
         show_action.connect("activate", lambda a, p: self.win.present())
         self.add_action(show_action)
@@ -767,21 +728,18 @@ class PredatorApp(Adw.Application):
         self.release()
         self.quit()
 
-
 class PredatorWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.set_title("PredatorSense Linux")
         self.set_default_size(900, 650)
         self.set_resizable(True)
-
         self._dark_mode = True
         self._load_config()
         self._build_css()
         self._build_ui()
         self._start_sensor_loop()
 
-    # ── Config ──────────────────────────────────────────────────────────────
     def _load_config(self):
         _ensure_module_loaded()
         os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
@@ -807,8 +765,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         except Exception:
             pass
 
-    # ── CSS ─────────────────────────────────────────────────────────────────
-    # ── Theme ───────────────────────────────────────────────────────────────
     DARK_THEME = {
         "bg":           "#080B0F",
         "bg2":          "#0D1117",
@@ -853,230 +809,46 @@ class PredatorWindow(Adw.ApplicationWindow):
     def _apply_theme(self):
         t = self.DARK_THEME if self._dark_mode else self.LIGHT_THEME
         css = f"""
-        @keyframes pulse-glow {{
-            0%   {{ opacity: 0.6; }}
-            50%  {{ opacity: 1.0; }}
-            100% {{ opacity: 0.6; }}
-        }}
-        @keyframes slide-in {{
-            from {{ opacity: 0; margin-top: 12px; }}
-            to   {{ opacity: 1; margin-top: 0px; }}
-        }}
-        @keyframes spin {{
-            from {{ transform: rotate(0deg); }}
-            to   {{ transform: rotate(360deg); }}
-        }}
-
-        window {{
-            background-color: {t["bg"]};
-            color: {t["text"]};
-        }}
-        headerbar {{
-            background: {t["bg"]};
-            border-bottom: 1px solid {t["border"]};
-            color: {t["text"]};
-            min-height: 52px;
-        }}
-        headerbar button {{
-            color: {t["text2"]};
-            border-radius: 8px;
-            padding: 4px 8px;
-        }}
-        headerbar button:hover {{
-            color: {t["text"]};
-            background: {t["surface"]};
-        }}
-        headerbar .title {{
-            color: {t["text"]};
-            font-weight: 800;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-        }}
-
-        .sidebar {{
-            background: {t["bg2"]};
-            border-right: 1px solid {t["border"]};
-        }}
-
-        .nav-btn {{
-            color: {t["text2"]};
-            background: transparent;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            transition: all 150ms ease;
-        }}
-        .nav-btn:hover {{
-            background: {t["surface"]};
-            color: {t["text"]};
-        }}
-        .nav-btn.active {{
-            background: linear-gradient(135deg, {t["accent_glow"]}, rgba(255,61,0,0.12));
-            color: {t["accent"]};
-            border-left: 2px solid {t["accent"]};
-        }}
-
-        .card {{
-            background: {t["surface"]};
-            border-radius: 16px;
-            border: 1px solid {t["border2"]};
-            padding: 20px;
-            animation: slide-in 200ms ease;
-        }}
-        .card-accent {{
-            background: {t["surface"]};
-            border-radius: 16px;
-            border: 1px solid {t["border"]};
-            padding: 20px;
-        }}
-
-        .section-title {{
-            color: {t["text3"]};
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 2px;
-        }}
-        .page-title {{
-            color: {t["text"]};
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }}
-        .sub-label {{
-            color: {t["text2"]};
-            font-size: 11px;
-        }}
-        label {{
-            color: {t["text"]};
-        }}
-        .card label, .card-accent label {{
-            color: {t["text"]};
-        }}
-        .card .sub-label, .card-accent .sub-label {{
-            color: {t["text2"]};
-        }}
-        box > label {{
-            color: {t["text"]};
-        }}
+        window {{ background-color: {t["bg"]}; color: {t["text"]}; }}
+        headerbar {{ background: {t["bg"]}; border-bottom: 1px solid {t["border"]}; color: {t["text"]}; min-height: 52px; }}
+        headerbar button {{ color: {t["text2"]}; border-radius: 8px; padding: 4px 8px; }}
+        headerbar button:hover {{ color: {t["text"]}; background: {t["surface"]}; }}
+        headerbar .title {{ color: {t["text"]}; font-weight: 800; font-size: 13px; letter-spacing: 0.5px; }}
+        .sidebar {{ background: {t["bg2"]}; border-right: 1px solid {t["border"]}; }}
+        .nav-btn {{ color: {t["text2"]}; background: transparent; border: none; border-radius: 10px; padding: 10px 12px; font-size: 12px; font-weight: 600; letter-spacing: 0.3px; transition: all 150ms ease; }}
+        .nav-btn:hover {{ background: {t["surface"]}; color: {t["text"]}; }}
+        .nav-btn.active {{ background: linear-gradient(135deg, {t["accent_glow"]}, rgba(255,61,0,0.12)); color: {t["accent"]}; border-left: 2px solid {t["accent"]}; }}
+        .card {{ background: {t["surface"]}; border-radius: 16px; border: 1px solid {t["border2"]}; padding: 20px; }}
+        .card-accent {{ background: {t["surface"]}; border-radius: 16px; border: 1px solid {t["border"]}; padding: 20px; }}
+        .section-title {{ color: {t["text3"]}; font-size: 9px; font-weight: 800; letter-spacing: 2px; }}
+        .page-title {{ color: {t["text"]}; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }}
+        .sub-label {{ color: {t["text2"]}; font-size: 11px; }}
+        label {{ color: {t["text"]}; }}
+        .card label, .card-accent label {{ color: {t["text"]}; }}
+        .card .sub-label, .card-accent .sub-label {{ color: {t["text2"]}; }}
+        box > label {{ color: {t["text"]}; }}
         .accent-text {{ color: {t["accent"]}; font-weight: 700; }}
         .success-text {{ color: {t["success"]}; }}
         .warning-text {{ color: {t["warning"]}; }}
         .danger-text  {{ color: {t["danger"]}; }}
         .cyan-text    {{ color: {t["cyan"]}; }}
-
-        .preset-btn {{
-            background: {t["surface2"]};
-            border: 1px solid {t["border2"]};
-            border-radius: 10px;
-            color: {t["text"]};
-            padding: 9px 18px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            transition: all 150ms ease;
-        }}
-        .preset-btn:hover {{
-            background: {t["accent_glow"]};
-            border-color: {t["accent"]};
-            color: {t["accent"]};
-        }}
-        .preset-btn.active {{
-            background: linear-gradient(135deg, {t["accent_glow"]}, rgba(255,61,0,0.15));
-            border-color: {t["accent"]};
-            color: {t["accent"]};
-            font-weight: 800;
-        }}
-
-        .danger-btn {{
-            background: rgba(255,61,90,0.1);
-            border: 1px solid rgba(255,61,90,0.3);
-            border-radius: 10px;
-            color: {t["danger"]};
-            padding: 9px 18px;
-            font-size: 12px;
-            font-weight: 700;
-        }}
-        .danger-btn:hover {{
-            background: rgba(255,61,90,0.2);
-            border-color: {t["danger"]};
-        }}
-
-        scale trough {{
-            background: {t["surface2"]};
-            border-radius: 6px;
-            min-height: 6px;
-        }}
-        scale trough highlight {{
-            background: linear-gradient(90deg, {t["accent2"]}, {t["accent"]});
-            border-radius: 6px;
-        }}
-        scale slider {{
-            background: {t["accent"]};
-            border-radius: 50%;
-            min-width: 18px;
-            min-height: 18px;
-            box-shadow: 0 0 8px {t["accent_glow"]};
-            transition: all 100ms ease;
-        }}
-        scale slider:hover {{
-            min-width: 22px;
-            min-height: 22px;
-        }}
-
-        switch {{
-            background: {t["surface2"]};
-            border: 1px solid {t["border2"]};
-            border-radius: 20px;
-        }}
-        switch:checked {{
-            background: linear-gradient(135deg, {t["accent2"]}, {t["accent"]});
-            border-color: {t["accent"]};
-        }}
-        switch slider {{
-            background: {t["text"]};
-            border-radius: 50%;
-        }}
-
-        .warning-bar {{
-            background: rgba(255,107,0,0.08);
-            border: 1px solid {t["border"]};
-            border-left: 3px solid {t["accent"]};
-            border-radius: 12px;
-            padding: 10px 16px;
-            color: {t["accent"]};
-            font-size: 11px;
-        }}
-
-        .stat-value {{
-            color: {t["text"]};
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: -1px;
-        }}
-        .stat-unit {{
-            color: {t["text2"]};
-            font-size: 12px;
-            font-weight: 600;
-        }}
-
-        .profile-chip {{
-            background: linear-gradient(135deg, {t["accent_glow"]}, rgba(255,61,0,0.1));
-            border: 1px solid {t["border"]};
-            border-radius: 20px;
-            padding: 4px 12px;
-            color: {t["accent"]};
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }}
-
-        separator {{
-            background: {t["border2"]};
-            min-height: 1px;
-        }}
+        .preset-btn {{ background: {t["surface2"]}; border: 1px solid {t["border2"]}; border-radius: 10px; color: {t["text"]}; padding: 9px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.3px; transition: all 150ms ease; }}
+        .preset-btn:hover {{ background: {t["accent_glow"]}; border-color: {t["accent"]}; color: {t["accent"]}; }}
+        .preset-btn.active {{ background: linear-gradient(135deg, {t["accent_glow"]}, rgba(255,61,0,0.15)); border-color: {t["accent"]}; color: {t["accent"]}; font-weight: 800; }}
+        .danger-btn {{ background: rgba(255,61,90,0.1); border: 1px solid rgba(255,61,90,0.3); border-radius: 10px; color: {t["danger"]}; padding: 9px 18px; font-size: 12px; font-weight: 700; }}
+        .danger-btn:hover {{ background: rgba(255,61,90,0.2); border-color: {t["danger"]}; }}
+        scale trough {{ background: {t["surface2"]}; border-radius: 6px; min-height: 6px; }}
+        scale trough highlight {{ background: linear-gradient(90deg, {t["accent2"]}, {t["accent"]}); border-radius: 6px; }}
+        scale slider {{ background: {t["accent"]}; border-radius: 50%; min-width: 18px; min-height: 18px; box-shadow: 0 0 8px {t["accent_glow"]}; transition: all 100ms ease; }}
+        scale slider:hover {{ min-width: 22px; min-height: 22px; }}
+        switch {{ background: {t["surface2"]}; border: 1px solid {t["border2"]}; border-radius: 20px; }}
+        switch:checked {{ background: linear-gradient(135deg, {t["accent2"]}, {t["accent"]}); border-color: {t["accent"]}; }}
+        switch slider {{ background: {t["text"]}; border-radius: 50%; }}
+        .warning-bar {{ background: rgba(255,107,0,0.08); border: 1px solid {t["border"]}; border-left: 3px solid {t["accent"]}; border-radius: 12px; padding: 10px 16px; color: {t["accent"]}; font-size: 11px; }}
+        .stat-value {{ color: {t["text"]}; font-size: 28px; font-weight: 900; letter-spacing: -1px; }}
+        .stat-unit {{ color: {t["text2"]}; font-size: 12px; font-weight: 600; }}
+        .profile-chip {{ background: linear-gradient(135deg, {t["accent_glow"]}, rgba(255,61,0,0.1)); border: 1px solid {t["border"]}; border-radius: 20px; padding: 4px 12px; color: {t["accent"]}; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }}
+        separator {{ background: {t["border2"]}; min-height: 1px; }}
         """
         provider = Gtk.CssProvider()
         provider.load_from_data(css.encode())
@@ -1091,27 +863,23 @@ class PredatorWindow(Adw.ApplicationWindow):
         icon = "☀" if not self._dark_mode else "☾"
         btn.set_label(icon)
 
-    # ── UI ──────────────────────────────────────────────────────────────────
     def _build_ui(self):
         self._pages = {}
         self._nav_buttons = {}
         self._active_page = "dashboard"
 
-        # Outer box: titlebar + content
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.set_content(outer)
 
-        # Header bar with window controls
         header = Adw.HeaderBar()
         header.set_show_end_title_buttons(True)
         header.set_show_start_title_buttons(True)
-        header.set_decoration_layout("close,minimize,maximize:")
+        header.set_decoration_layout(":minimize,maximize,close")
         title_lbl = Gtk.Label()
         title_lbl.set_markup('<span weight="bold" color="#FF5000">⬡</span> PredatorSense Linux')
         header.set_title_widget(title_lbl)
         header.add_css_class("flat")
 
-        # Profile cycle button in headerbar
         self._profile_cycle_btn = Gtk.Button()
         self._profile_cycle_btn.set_tooltip_text("Cycle Thermal Profile")
         self._profile_cycle_lbl = Gtk.Label()
@@ -1124,21 +892,14 @@ class PredatorWindow(Adw.ApplicationWindow):
         self._profile_cycle_btn.set_child(self._profile_cycle_lbl)
         self._profile_cycle_btn.add_css_class("flat")
         self._profile_cycle_btn.connect("clicked", self._cycle_profile)
-        header.pack_end(self._profile_cycle_btn)
 
-        # Theme toggle button
         self._theme_btn = Gtk.Button(label="☾")
         self._theme_btn.set_tooltip_text("Toggle Light/Dark Mode")
         self._theme_btn.add_css_class("flat")
         self._theme_btn.connect("clicked", self._toggle_theme)
-        header.pack_end(self._theme_btn)
 
-        # Quit button — fully exit the app
-        quit_btn = Gtk.Button(label="✕ Quit")
-        quit_btn.set_tooltip_text("Quit PredatorSense (closing window keeps key listener running)")
-        quit_btn.add_css_class("flat")
-        quit_btn.connect("clicked", lambda b: self.get_application()._quit())
-        header.pack_start(quit_btn)
+        header.pack_start(self._theme_btn)
+        header.pack_start(self._profile_cycle_btn)
 
         outer.append(header)
 
@@ -1146,7 +907,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         root.set_vexpand(True)
         outer.append(root)
 
-        # Sidebar
         sidebar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         sidebar.add_css_class("sidebar")
         sidebar.set_size_request(200, -1)
@@ -1155,7 +915,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         sidebar.set_margin_start(8)
         sidebar.set_margin_end(8)
 
-        # Custom SVG-style logo drawn as a DrawingArea
         logo_canvas = Gtk.DrawingArea()
         logo_canvas.set_content_width(180)
         logo_canvas.set_content_height(64)
@@ -1163,7 +922,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         logo_canvas.set_margin_bottom(16)
         sidebar.append(logo_canvas)
 
-        # Nav items with custom SVG icons
         nav_items = [
             ("dashboard", self._icon_dashboard, "Dashboard"),
             ("fans",      self._icon_fan,       "Fan Control"),
@@ -1177,7 +935,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         for page_id, icon_fn, label in nav_items:
             btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
             btn_box.set_margin_start(4)
-            # Icon canvas
             icon_canvas = Gtk.DrawingArea()
             icon_canvas.set_content_width(20)
             icon_canvas.set_content_height(20)
@@ -1195,7 +952,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             sidebar.append(btn)
             self._nav_buttons[page_id] = btn
 
-        # Driver status at bottom of sidebar
         spacer = Gtk.Box()
         spacer.set_vexpand(True)
         sidebar.append(spacer)
@@ -1212,7 +968,6 @@ class PredatorWindow(Adw.ApplicationWindow):
 
         root.append(sidebar)
 
-        # Page stack with smooth transitions
         self._stack = Gtk.Stack()
         self._stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self._stack.set_transition_duration(250)
@@ -1239,7 +994,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         root.append(self._stack)
         self._navigate("dashboard")
 
-    # ── Custom SVG-style icon draw functions ────────────────────────────────
     def _icon_color(self, active=False):
         if active:
             return (1.0, 0.42, 0.0)
@@ -1250,7 +1004,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         c = self._icon_color()
         cr.set_source_rgba(*c, 0.9)
         cr.set_line_width(1.5)
-        # 4 small squares
         for i, (x, y) in enumerate([(1,1),(10,1),(1,10),(10,10)]):
             cr.rectangle(x, y, 8, 8)
         cr.stroke()
@@ -1277,7 +1030,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         c = self._icon_color()
         cr.set_source_rgba(*c, 0.9)
         cr.set_line_width(1.5)
-        # Flame shape
         cx = w/2
         cr.move_to(cx, 2)
         cr.curve_to(cx+5, 5, cx+7, 10, cx+4, 14)
@@ -1350,14 +1102,11 @@ class PredatorWindow(Adw.ApplicationWindow):
         cr.set_source_rgba(*c, 0.9)
         cr.set_line_width(1.5)
         cx, cy = w/2, h/2
-        # Power button circle arc
         cr.arc(cx, cy, 7, math.pi*0.2, math.pi*0.8)
         cr.stroke()
-        # Vertical line at top
         cr.move_to(cx, cy - 8)
         cr.line_to(cx, cy - 3)
         cr.stroke()
-        # Lightning bolt inside
         cr.set_line_width(1.2)
         cr.move_to(cx + 1, cy - 2)
         cr.line_to(cx - 2, cy + 2)
@@ -1369,9 +1118,7 @@ class PredatorWindow(Adw.ApplicationWindow):
         cr.fill()
 
     def _draw_logo(self, area, cr, w, h):
-        """Draw the custom Predator-style logo."""
         import math
-        # Hexagon icon
         cx, cy = 22, h/2
         r = 16
         cr.set_source_rgba(1.0, 0.42, 0.0, 1.0)
@@ -1388,14 +1135,12 @@ class PredatorWindow(Adw.ApplicationWindow):
         cr.set_source_rgba(1.0, 0.42, 0.0, 1.0)
         cr.set_line_width(1.5)
         cr.stroke()
-        # P letter inside hex
         cr.set_source_rgba(1.0, 0.42, 0.0, 1.0)
         cr.select_font_face("Monospace", 0, 1)
         cr.set_font_size(14)
         ext = cr.text_extents("P")
         cr.move_to(cx - ext.width/2, cy + ext.height/2)
         cr.show_text("P")
-        # PREDATOR text
         txt_color = (0.94, 0.96, 0.98) if self._dark_mode else (0.05, 0.07, 0.1)
         cr.set_source_rgba(*txt_color, 1.0)
         cr.select_font_face("Monospace", 0, 1)
@@ -1408,7 +1153,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         cr.move_to(44, h/2 + 9)
         cr.show_text("PHN16S-71 · CachyOS")
 
-    # ── Navigation ──────────────────────────────────────────────────────────
     def _on_nav(self, btn, page_id):
         self._navigate(page_id)
 
@@ -1421,7 +1165,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         self._stack.set_visible_child_name(page_id)
         self._active_page = page_id
 
-    # ── Driver status ────────────────────────────────────────────────────────
     def _update_driver_status(self):
         if os.path.exists(PREDATOR_BASE):
             self._driver_status.set_markup(
@@ -1432,7 +1175,6 @@ class PredatorWindow(Adw.ApplicationWindow):
                 '<span color="#FF4444" size="9000">● Driver not found\nRun installer first</span>'
             )
 
-    # ── Dashboard ────────────────────────────────────────────────────────────
     def _build_dashboard(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         box.set_margin_top(24); box.set_margin_bottom(24)
@@ -1443,7 +1185,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         hdr.set_halign(Gtk.Align.START)
         box.append(hdr)
 
-        # Warning if no driver
         if not os.path.exists(PREDATOR_BASE):
             warn = Gtk.Label()
             warn.set_markup(
@@ -1455,7 +1196,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             warn.set_xalign(0)
             box.append(warn)
 
-        # Gauge row
         gauge_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
         gauge_row.set_homogeneous(True)
 
@@ -1476,7 +1216,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             gauge_row.append(card[0])
         box.append(gauge_row)
 
-        # Info grid
         info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         info_card.add_css_class("card")
 
@@ -1522,7 +1261,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         card.append(gauge)
         return card, gauge
 
-    # ── Fan Control ──────────────────────────────────────────────────────────
     def _build_fans(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         box.set_margin_top(24); box.set_margin_bottom(24)
@@ -1533,7 +1271,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         hdr.set_halign(Gtk.Align.START)
         box.append(hdr)
 
-        # ── Mode toggle: Manual vs Auto Curve ────────────────────────────────
         mode_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         mode_card.add_css_class("card")
         mode_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
@@ -1556,7 +1293,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         mode_card.append(mode_row)
         box.append(mode_card)
 
-        # ── Profile selector for curves ───────────────────────────────────────
         profile_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         profile_card.add_css_class("card")
         pl = Gtk.Label(label="FAN CURVE PROFILE")
@@ -1579,7 +1315,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             profile_row.append(btn)
             self._curve_profile_btns[pid] = btn
 
-        # Custom profiles
         self._custom_profiles = self.config.get("custom_fan_profiles", {})
         self._custom_curve_btns = {}
         custom_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
@@ -1597,7 +1332,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         profile_card.append(custom_row)
         box.append(profile_card)
 
-        # ── Fan curve editors ─────────────────────────────────────────────────
         curve_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         curve_card.add_css_class("card")
         cl = Gtk.Label(label="DRAG POINTS TO SET FAN SPEED AT EACH TEMPERATURE")
@@ -1618,11 +1352,9 @@ class PredatorWindow(Adw.ApplicationWindow):
         curve_card.append(self._cpu_curve)
         curve_card.append(self._gpu_curve)
 
-        # Save / Reset buttons
         btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_row.set_halign(Gtk.Align.FILL)
 
-        # Left side: reset all profiles
         reset_all_btn = Gtk.Button(label="↺ Reset All Profiles")
         reset_all_btn.add_css_class("preset-btn")
         reset_all_btn.set_tooltip_text("Reset fan curves for ALL profiles back to defaults")
@@ -1631,7 +1363,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         spacer = Gtk.Box()
         spacer.set_hexpand(True)
 
-        # Right side: reset current + save
         reset_btn = Gtk.Button(label="↺ Reset This Profile")
         reset_btn.add_css_class("preset-btn")
         reset_btn.set_tooltip_text("Reset current profile curve to default")
@@ -1647,7 +1378,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         curve_card.append(btn_row)
         box.append(curve_card)
 
-        # ── Manual override (when auto curve is OFF) ──────────────────────────
         manual_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         manual_card.add_css_class("card")
         ml = Gtk.Label(label="MANUAL FAN SPEED (AUTO CURVE OFF)")
@@ -1671,7 +1401,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         return box
 
     def _get_curve(self, profile):
-        """Get fan curve for a profile, falling back to defaults."""
         saved = self.config.get("fan_curves", {})
         if profile in saved:
             return saved[profile]
@@ -1690,10 +1419,8 @@ class PredatorWindow(Adw.ApplicationWindow):
         self._gpu_curve.set_points(curves["gpu"])
 
     def _on_curve_changed(self, points):
-        """Apply curve changes live as user drags points."""
         if not self.config.get("auto_fan_curve", False):
             return
-        # Get latest points from both curves and interpolate at current temp
         try:
             hwmon = _find_hwmon_dir()
             cpu_temp = None
@@ -1733,18 +1460,15 @@ class PredatorWindow(Adw.ApplicationWindow):
             "cpu": self._cpu_curve.get_points(),
             "gpu": self._gpu_curve.get_points(),
         }
-        # Also save to custom profiles if it's custom
         if profile in self._custom_profiles:
             self._custom_profiles[profile] = self.config["fan_curves"][profile]
             self.config["custom_fan_profiles"] = self._custom_profiles
         self._save_config()
-        # Update button label briefly to confirm save
         if btn:
             btn.set_label("✓ Saved!")
             GLib.timeout_add(1500, lambda: btn.set_label("✓ Save Curve") or False)
 
     def _reset_curve(self, btn):
-        """Reset current active profile to default."""
         profile = self._active_curve_profile
         default = DEFAULT_FAN_CURVES.get(profile, DEFAULT_FAN_CURVES["balanced"])
         self._cpu_curve.set_points(default["cpu"])
@@ -1754,7 +1478,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         self._save_config()
 
     def _reset_all_curves(self, btn):
-        """Reset ALL profiles to their default fan curves."""
         dlg = Adw.MessageDialog.new(self.get_root(),
             "Reset All Fan Curves?",
             "This will reset Quiet, Balanced, Performance and Turbo curves back to defaults. Custom profiles are kept.")
@@ -1768,10 +1491,8 @@ class PredatorWindow(Adw.ApplicationWindow):
     def _on_reset_all_response(self, dlg, response):
         if response != "reset":
             return
-        # Clear all saved curves
         self.config["fan_curves"] = {}
         self._save_config()
-        # Reload current profile curves in the editor
         profile = self._active_curve_profile
         default = DEFAULT_FAN_CURVES.get(profile, DEFAULT_FAN_CURVES["balanced"])
         self._cpu_curve.set_points(default["cpu"])
@@ -1795,7 +1516,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         name = entry.get_text().strip()
         if not name:
             return
-        # Copy current active curve as starting point
         self._custom_profiles[name] = {
             "cpu": self._cpu_curve.get_points(),
             "gpu": self._gpu_curve.get_points(),
@@ -1803,25 +1523,20 @@ class PredatorWindow(Adw.ApplicationWindow):
         self.config["custom_fan_profiles"] = self._custom_profiles
         self._save_config()
         self._add_custom_curve_btn(self._custom_row, name)
-        # Select it
         self._active_curve_profile = name
 
     def _add_custom_curve_btn(self, row, name):
-        # Wrap button + delete X in a box
         wrap = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-
         btn = Gtk.Button(label=f"★ {name}")
         btn.add_css_class("preset-btn")
         btn.set_margin_end(0)
         btn.connect("clicked", self._on_custom_curve_select, name)
-
         del_btn = Gtk.Button(label="✕")
         del_btn.set_tooltip_text(f"Delete profile: {name}")
         del_btn.add_css_class("danger-btn")
         del_btn.set_size_request(28, -1)
         del_btn.set_margin_start(2)
         del_btn.connect("clicked", self._delete_custom_profile, name)
-
         wrap.append(btn)
         wrap.append(del_btn)
         row.append(wrap)
@@ -1852,20 +1567,15 @@ class PredatorWindow(Adw.ApplicationWindow):
     def _on_delete_profile_response(self, dlg, response, name):
         if response != "delete":
             return
-        # Remove from data
         self._custom_profiles.pop(name, None)
         self.config["custom_fan_profiles"] = self._custom_profiles
         if "fan_curves" in self.config:
             self.config["fan_curves"].pop(name, None)
         self._save_config()
-
-        # Remove widget from UI
         if name in self._custom_curve_btns:
             val = self._custom_curve_btns.pop(name)
             wrap = val[2] if isinstance(val, tuple) else val
             self._custom_row.remove(wrap)
-
-        # If we deleted the active profile, fall back to balanced
         if self._active_curve_profile == name:
             self._active_curve_profile = "balanced"
             default = DEFAULT_FAN_CURVES["balanced"]
@@ -1902,16 +1612,12 @@ class PredatorWindow(Adw.ApplicationWindow):
         container.append(scale)
         return container, val_lbl
 
-    def _on_preset(self, btn, name):
-        pass  # kept for compatibility
-
     def _apply_fans(self, btn):
         cpu = self.config.get("fan_cpu", 50)
         gpu = self.config.get("fan_gpu", 50)
         sysfs_write(FAN_SPEED, f"{cpu},{gpu}")
         self._save_config()
 
-    # ── Thermal ──────────────────────────────────────────────────────────────
     def _build_thermal(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         box.set_margin_top(24); box.set_margin_bottom(24)
@@ -1922,7 +1628,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         hdr.set_halign(Gtk.Align.START)
         box.append(hdr)
 
-        # AC warning
         bat_status = sysfs_read("/sys/class/power_supply/BAT0/status") or ""
         on_battery = bat_status.lower() not in ("charging", "full", "not charging")
         ac_warn = Gtk.Label()
@@ -1979,7 +1684,6 @@ class PredatorWindow(Adw.ApplicationWindow):
 
     def _set_thermal(self, btn, profile):
         sysfs_write(PLATFORM_PROFILE, profile)
-        # Also apply matching fan speed for this profile
         if profile in PROFILE_FAN_SPEEDS:
             cpu, gpu = PROFILE_FAN_SPEEDS[profile]
             sysfs_write(FAN_SPEED, f"{cpu},{gpu}")
@@ -1990,7 +1694,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         self._sync_profile_ui(profile)
 
     def _sync_profile_ui(self, profile):
-        """Sync all profile-related UI to the given profile name."""
         for pid, b in getattr(self, "_thermal_btns", {}).items():
             if pid == profile:
                 b.add_css_class("active")
@@ -1998,7 +1701,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             else:
                 b.remove_css_class("active")
                 b.set_label("Activate")
-        # Display names matching the thermal page exactly
         icons = {"performance": "🔥", "balanced-performance": "⚡", "balanced": "⚖", "low-power": "🤫"}
         names = {"performance": "Turbo", "balanced-performance": "Performance", "balanced": "Balanced", "low-power": "Quiet"}
         icon = icons.get(profile, "⚖")
@@ -2009,7 +1711,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             )
 
     def _on_ac_changed(self, on_ac):
-        """Show/hide battery warning on thermal page when AC state changes."""
         if hasattr(self, "_ac_warning_bar"):
             self._ac_warning_bar.set_visible(not on_ac)
 
@@ -2022,7 +1723,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             idx = 1
         next_profile = profiles[(idx + 1) % len(profiles)]
         sysfs_write(PLATFORM_PROFILE, next_profile)
-        # Apply matching fan speed
         if next_profile in PROFILE_FAN_SPEEDS:
             cpu, gpu = PROFILE_FAN_SPEEDS[next_profile]
             sysfs_write(FAN_SPEED, f"{cpu},{gpu}")
@@ -2032,7 +1732,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         self._save_config()
         self._sync_profile_ui(next_profile)
 
-    # ── Keyboard RGB ─────────────────────────────────────────────────────────
     def _build_keyboard(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         box.set_margin_top(24); box.set_margin_bottom(24)
@@ -2043,7 +1742,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         hdr.set_halign(Gtk.Align.START)
         box.append(hdr)
 
-        # Backlight timeout (supported via sysfs)
         timeout_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         timeout_card.add_css_class("card")
         tl = Gtk.Label(label="KEYBOARD BACKLIGHT")
@@ -2070,7 +1768,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         timeout_card.append(timeout_row)
         box.append(timeout_card)
 
-        # Boot animation/sound (supported)
         boot_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         boot_card.add_css_class("card")
         bl = Gtk.Label(label="BOOT ANIMATION & SOUND")
@@ -2098,7 +1795,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         boot_card.append(boot_row)
         box.append(boot_card)
 
-        # Brightness info card
         bright_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         bright_card.add_css_class("card")
         bl = Gtk.Label(label="KEYBOARD BRIGHTNESS")
@@ -2116,7 +1812,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         bright_card.append(bi)
         box.append(bright_card)
 
-        # RGB coming soon card
         rgb_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         rgb_card.add_css_class("card")
         rl = Gtk.Label(label="PER-KEY RGB — COMING SOON")
@@ -2134,7 +1829,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         rgb_card.append(ri)
         box.append(rgb_card)
 
-        # Profile button card
         profile_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         profile_card.add_css_class("card")
         pl = Gtk.Label(label="PROFILE BUTTON")
@@ -2168,7 +1862,6 @@ class PredatorWindow(Adw.ApplicationWindow):
     def _on_boot_anim(self, sw, state):
         sysfs_write(BOOT_ANIM_SOUND, "1" if state else "0")
 
-    # ── Battery ──────────────────────────────────────────────────────────────
     def _build_battery(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         box.set_margin_top(24); box.set_margin_bottom(24)
@@ -2254,7 +1947,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         idx = self._usb_combo.get_selected()
         sysfs_write(USB_CHARGING, str(watt_map[idx]))
 
-    # ── Display ──────────────────────────────────────────────────────────────
     def _build_display(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         box.set_margin_top(24); box.set_margin_bottom(24)
@@ -2287,7 +1979,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         lcd_card.append(lcd_row)
         box.append(lcd_card)
 
-        # GPU mode (envycontrol)
         gpu_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         gpu_card.add_css_class("card")
         gl = Gtk.Label(label="GPU MODE (ENVYCONTROL)")
@@ -2348,13 +2039,22 @@ class PredatorWindow(Adw.ApplicationWindow):
         if response != "apply":
             return
         try:
-            subprocess.run(["pkexec", "envycontrol", "--switch", mode], check=True)
+            # EnvyControl blocks on Limine's mkinitcpio prompt.
+            # We pipe 'y' into it to auto-confirm the rebuild.
+            process = subprocess.Popen(
+                ["pkexec", "envycontrol", "--switch", mode.lower()],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            process.communicate(input="y\n")
+
             # Reboot after applying
             subprocess.Popen(["systemctl", "reboot"])
         except Exception as e:
             print(f"GPU switch error: {e}")
 
-    # ── Power Limits ─────────────────────────────────────────────────────────
     def _build_power(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         box.set_margin_top(24); box.set_margin_bottom(24)
@@ -2365,21 +2065,25 @@ class PredatorWindow(Adw.ApplicationWindow):
         hdr.set_halign(Gtk.Align.START)
         box.append(hdr)
 
-        # Info
         info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         info_card.add_css_class("card")
         info_lbl = Gtk.Label()
+
+        cpu_name = _get_cpu_name()
+        gpu_names = _get_gpu_names()
+        nvidia_name = gpu_names["nvidia"]
+
         info_lbl.set_markup(
-            "<b>Intel Core Ultra 9 275HX + NVIDIA RTX 5070 Ti — Power Control</b>\n"
+            f"<b>{cpu_name} + {nvidia_name} — Power Control</b>\n"
             "<small>MSR undervolting is locked by Intel on Arrow Lake. Power limits achieve "
             "the same effect — lower temps, quieter fans, better battery. "
             "CPU cores, iGPU, and NVIDIA can be controlled independently.</small>"
         )
+
         info_lbl.set_wrap(True); info_lbl.set_xalign(0)
         info_card.append(info_lbl)
         box.append(info_card)
 
-        # Read current values
         def rw(path, default):
             v = sysfs_read(path)
             return int(v)//1_000_000 if v and int(v) > 0 else default
@@ -2387,7 +2091,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         pl2_w  = rw(RAPL_PL2, RAPL_PL2_DEFAULT)
         core_w = rw(RAPL_CORE_PL1, RAPL_CORE_DEFAULT)
         igpu_w = rw(RAPL_IGPU_PL1, RAPL_IGPU_DEFAULT)
-        # NVIDIA current
         try:
             out = subprocess.check_output(
                 ["nvidia-smi","--query-gpu=power.limit","--format=csv,noheader,nounits"],
@@ -2396,14 +2099,12 @@ class PredatorWindow(Adw.ApplicationWindow):
         except Exception:
             nv_w = NVIDIA_DEFAULT
 
-        # Presets
         preset_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         preset_card.add_css_class("card")
         pl = Gtk.Label(label="QUICK PRESETS")
         pl.add_css_class("section-title"); pl.set_halign(Gtk.Align.START)
         preset_card.append(pl)
         self._power_preset_btns = {}
-        # Use a 2-column grid so it doesn't overflow
         preset_grid = Gtk.Grid()
         preset_grid.set_column_spacing(8)
         preset_grid.set_row_spacing(8)
@@ -2431,7 +2132,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         preset_card.append(preset_grid)
         box.append(preset_card)
 
-        # ── CPU Package sliders ───────────────────────────────────────────────
         cpu_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         cpu_card.add_css_class("card")
         cpu_lbl = Gtk.Label(label="CPU PACKAGE (intel-rapl:0)")
@@ -2455,7 +2155,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         cpu_card.append(self._pl2_warn)
         box.append(cpu_card)
 
-        # ── CPU Core + iGPU sliders ───────────────────────────────────────────
         sub_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         sub_card.add_css_class("card")
         sub_lbl = Gtk.Label(label="CPU CORE + iGPU (sub-domains, 0 = limited by package)")
@@ -2473,7 +2172,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         sub_card.append(igpu_box)
         box.append(sub_card)
 
-        # ── NVIDIA slider ─────────────────────────────────────────────────────
         nv_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         nv_card.add_css_class("card")
         nv_lbl = Gtk.Label(label="NVIDIA RTX 5070 Ti (5W – 115W, default 70W)")
@@ -2489,7 +2187,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         nv_card.append(self._nv_warn)
         box.append(nv_card)
 
-        # Buttons
         btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_row.set_halign(Gtk.Align.END)
         reset_btn = Gtk.Button(label="↺ Reset to Stock")
@@ -2612,7 +2309,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         sysfs_write(RAPL_PL2, str(pl2  * 1_000_000))
         if core > 0: sysfs_write(RAPL_CORE_PL1, str(core * 1_000_000))
         if igpu > 0: sysfs_write(RAPL_IGPU_PL1, str(igpu * 1_000_000))
-        # NVIDIA via nvidia-smi
         try:
             subprocess.run(["sudo", "nvidia-smi", "-pl", str(nv)],
                            capture_output=True, timeout=5)
@@ -2680,16 +2376,24 @@ class PredatorWindow(Adw.ApplicationWindow):
         hdr.set_halign(Gtk.Align.START)
         box.append(hdr)
 
+        model = sysfs_read("/sys/class/dmi/id/product_name") or "Unknown Acer Laptop"
+        firmware = sysfs_read("/sys/class/dmi/id/bios_version") or "Unknown"
+        kernel = subprocess.check_output(["uname", "-r"], text=True).strip()
+        desktop = os.environ.get("XDG_CURRENT_DESKTOP", "Unknown Desktop")
+        session = os.environ.get("XDG_SESSION_TYPE", "Unknown Session")
+
+        gpus = _get_gpu_names()
+
         specs = [
-            ("Model",      "Acer Predator PHN16S-71"),
-            ("CPU",        "Intel Core Ultra 9 275HX (24 cores)"),
-            ("GPU",        "NVIDIA GeForce RTX 5070 Ti Laptop"),
-            ("iGPU",       "Intel Arrow Lake-S"),
-            ("RAM",        "32.0 GiB"),
-            ("OS",         "CachyOS (Arch-based)"),
-            ("Kernel",     "Linux 7.0.3-1-cachyos"),
-            ("Desktop",    "GNOME 50 / Wayland"),
-            ("Firmware",   "V1.26"),
+            ("Model",      model),
+            ("CPU",        _get_cpu_name()),
+            ("GPU",        gpus["nvidia"]),
+            ("iGPU",       gpus["igpu"]),
+            ("RAM",        _get_ram_info()),
+            ("OS",         _get_os_info()),
+            ("Kernel",     f"Linux {kernel}"),
+            ("Desktop",    f"{desktop} / {session.title()}"),
+            ("Firmware",   firmware),
             ("Driver",     "linuwu_sense (Linuwu-Sense)"),
         ]
 
@@ -2714,7 +2418,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             info_card.append(row)
         box.append(info_card)
 
-        # Quick actions
         act_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         act_card.add_css_class("card")
         al = Gtk.Label(label="QUICK ACTIONS")
@@ -2760,7 +2463,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             except Exception:
                 pass
 
-    # ── Sensor loop ──────────────────────────────────────────────────────────
     def _start_sensor_loop(self):
         def loop():
             while True:
@@ -2771,14 +2473,12 @@ class PredatorWindow(Adw.ApplicationWindow):
         t = threading.Thread(target=loop, daemon=True)
         t.start()
 
-        # Auto fan curve control thread
         def fan_curve_loop():
             while True:
                 try:
                     if self.config.get("auto_fan_curve", False):
                         profile = sysfs_read(PLATFORM_PROFILE) or "balanced"
                         curves = self._get_curve(profile)
-                        # Read temps
                         hwmon = _find_hwmon_dir()
                         cpu_temp = None
                         gpu_temp = None
@@ -2787,7 +2487,6 @@ class PredatorWindow(Adw.ApplicationWindow):
                             t2 = sysfs_read(f"{hwmon}/temp2_input")
                             if t1: cpu_temp = float(t1) / 1000
                             if t2: gpu_temp = float(t2) / 1000
-                        # Fallback to nvidia-smi for GPU temp
                         if gpu_temp is None:
                             try:
                                 out = subprocess.check_output(
@@ -2799,7 +2498,6 @@ class PredatorWindow(Adw.ApplicationWindow):
                                 pass
 
                         def interp_curve(curve_pts, temp):
-                            """Linear interpolation of fan speed from curve."""
                             if temp is None:
                                 return None
                             pts = sorted(curve_pts, key=lambda p: p[0])
@@ -2828,7 +2526,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         fc = threading.Thread(target=fan_curve_loop, daemon=True)
         fc.start()
 
-        # Watch for AC plug/unplug events
         def ac_watcher():
             last_ac = None
             while True:
@@ -2845,21 +2542,17 @@ class PredatorWindow(Adw.ApplicationWindow):
         acw = threading.Thread(target=ac_watcher, daemon=True)
         acw.start()
 
-        # Listen for KEY_PRESENTATION (code 425) to cycle profiles
         kl = threading.Thread(target=self._key_listener, daemon=True)
         kl.start()
 
     def _key_listener(self):
-        """Listen for KEY_PRESENTATION (425) on /dev/input/event2 (primary)
-        plus any custom keybind set by the user.
-        Works on GNOME and KDE Plasma."""
         if not HAS_EVDEV:
             return
         import evdev
         PRIMARY_DEVICE = "/dev/input/event2"
 
         def get_target_keys():
-            keys = {425, 148}  # KEY_PRESENTATION, KEY_PROG1
+            keys = {425, 148}
             custom = self.config.get("custom_keybind_code")
             if custom:
                 keys.add(custom)
@@ -2880,10 +2573,8 @@ class PredatorWindow(Adw.ApplicationWindow):
                     time.sleep(2)
 
         def scan_and_listen():
-            # Try primary device first
             threading.Thread(target=listen_device,
                              args=(PRIMARY_DEVICE,), daemon=True).start()
-            # Also scan all other devices as fallback
             while True:
                 try:
                     devices = [evdev.InputDevice(p) for p in evdev.list_devices()
@@ -2904,8 +2595,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         threading.Thread(target=scan_and_listen, daemon=True).start()
 
     def _on_profile_changed_externally(self, profile):
-        """Called when profile button changes the thermal profile."""
-        # Update thermal page buttons
         for pid, b in getattr(self, "_thermal_btns", {}).items():
             if pid == profile:
                 b.add_css_class("active")
@@ -2913,7 +2602,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             else:
                 b.remove_css_class("active")
                 b.set_label("Activate")
-        # Update keyboard page label
         if hasattr(self, "_current_profile_lbl"):
             self._current_profile_lbl.set_markup(
                 f'<span font="16" color="#FF5000" weight="bold">Current: {profile}</span>'
@@ -2922,7 +2610,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         self._save_config()
 
     def _update_ui(self, data):
-        # Gauges
         cpu_u = data.get("cpu_util", 0) or 0
         self._gauge_cpu[1].set_value(cpu_u, f"{cpu_u}%")
 
@@ -2946,7 +2633,6 @@ class PredatorWindow(Adw.ApplicationWindow):
         if bat_p is not None:
             self._gauge_bat[1].set_value(bat_p, f"{bat_p}%")
 
-        # Real fan RPM display in info grid
         for key, (lbl, unit) in self._info_labels.items():
             val = data.get(key)
             if key == "fan_cpu":
@@ -2966,7 +2652,6 @@ class PredatorWindow(Adw.ApplicationWindow):
             if val is not None:
                 text = f"{val}{unit}" if unit else str(val)
                 lbl.set_markup(f'<span weight="bold">{text}</span>')
-
 
 def main():
     app = PredatorApp()

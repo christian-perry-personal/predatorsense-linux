@@ -12,6 +12,10 @@ if [[ -n "$MOD_VER" ]]; then
   echo "  ✓ linuwu_sense DKMS module removed"
 fi
 
+# Remove module load configs
+sudo rm -f /etc/modprobe.d/linuwu-sense-options.conf
+sudo rm -f /etc/modules-load.d/linuwu_sense.conf
+
 # Restore acer_wmi
 sudo rm -f /etc/modprobe.d/acer-wmi-blacklist.conf
 sudo modprobe acer_wmi 2>/dev/null || true
@@ -22,7 +26,13 @@ sudo rm -f /etc/udev/rules.d/99-predatorsense.rules
 sudo rm -f /etc/sudoers.d/predatorsense
 sudo udevadm control --reload-rules
 
-# Stop and remove systemd service
+# Stop and remove global power service (created by Python GUI)
+sudo systemctl stop predatorsense-power.service 2>/dev/null || true
+sudo systemctl disable predatorsense-power.service 2>/dev/null || true
+sudo rm -f /etc/systemd/system/predatorsense-power.service
+sudo systemctl daemon-reload
+
+# Stop and remove user systemd service
 systemctl --user stop predatorsense.service 2>/dev/null || true
 systemctl --user disable predatorsense.service 2>/dev/null || true
 rm -f "$HOME/.config/systemd/user/predatorsense.service"
